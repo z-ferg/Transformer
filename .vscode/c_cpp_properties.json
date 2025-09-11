@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "wrapper_config/pybind11",
+                "../../../..//Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Headers",
+                "${workspaceFolder}/wrapper_config/pybind11/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}
