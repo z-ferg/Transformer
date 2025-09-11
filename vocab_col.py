@@ -9,38 +9,37 @@ all_text = ds[:5]['text']
 single_text = "[END]".join(all_text)
 
 # Initialize the vocabulary
-text = list(single_text)
-vocab = set(text + ["<|endoftext|>", "[CLS]", "[SEP]", "[PAD]", "[UNK]"])
+tokens = list(single_text)
+vocab = set(tokens + ["<|endoftext|>", "[CLS]", "[SEP]", "[PAD]", "[UNK]"])
+
+def get_frequency(tokens):
+    ngrams = Counter()
+    for i in range(len(tokens)-1):
+        ngrams[(tokens[i], tokens[i+1])] += 1
+    return ngrams
+
+ngram_counts = get_frequency(tokens)
 
 # Repeat until vocab is desired length
-while len(vocab) < DESIRED_VOCAB_SIZE:
-    ngrams = []
-    
-    # 
-    pairs = Counter()
-    for i in range(len(text) - 1):
-        pairs[(text[i], text[i + 1])] += 1
-    
-    if not pairs:
-        break
-    
-    best_pair = pairs.most_common(1)[0][0]
-    merged_tok = "".join(best_pair)
+while len(vocab) < DESIRED_VOCAB_SIZE and ngram_counts:
+    best_ngram, freq = ngram_counts.most_common(1)[0]
+    merged_tok = "".join(best_ngram)
+    vocab.add(merged_tok)
     
     i = 0
-    new_text = []
+    new_tokens = []
     
-    while i < len(text):
-        if i < len(text) - 1 and (text[i], text[i + 1]) == best_pair:
-            new_text.append(merged_tok)
+    while i < len(tokens):
+        if i < len(tokens) - 1 and (tokens[i], tokens[i + 1]) == best_ngram:
+            new_tokens.append(merged_tok)
             i += 2
         else:
-            new_text.append(text[i])
+            new_tokens.append(tokens[i])
             i += 1
     
-    text = new_text
-    
-    vocab.add(merged_tok)
+    tokens = new_tokens
+    ngram_counts = get_frequency(tokens)
+
     print(f"New Token: {merged_tok} -> Vocab Size: {len(vocab)}")
 
 print("--------------------------------------")

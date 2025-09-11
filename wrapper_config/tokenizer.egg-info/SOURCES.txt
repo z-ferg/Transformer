@@ -1,7 +1,0 @@
-c_tokenization.cpp
-pyproject.toml
-setup.py
-tokenizer.egg-info/PKG-INFO
-tokenizer.egg-info/SOURCES.txt
-tokenizer.egg-info/dependency_links.txt
-tokenizer.egg-info/top_level.txt

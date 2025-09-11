@@ -5,10 +5,7 @@ ext_modules = [
     Extension(
         "tokenizer",
         ["c_tokenization.cpp"],
-        include_dirs=[
-            pybind11.get_include(),
-            pybind11.get_include(user=True)
-        ],
+        include_dirs=[pybind11.get_include()],
         language="c++",
         extra_compile_args=["-std=c++17"]
     )
