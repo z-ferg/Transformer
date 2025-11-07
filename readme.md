@@ -1,5 +1,5 @@
 # Transformer
-Trying to build the core of modern LLMs using PyTorch and large amounts of caffeine.
+Trying to build the core of modern LLMs using PyTorch.
 
 Sources and Helpful Links:
   Word Embeddings:
