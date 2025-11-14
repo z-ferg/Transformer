@@ -29,13 +29,19 @@ struct VocabEntry {
     string token;
 };
 
-/*
+/*  Split the given string corpus into individual chars for a first pass
+        Takes in the corpus as a string referenced object
+        Returns a vector of uint32_t values representing 
 */
-vector<Token> split_corpus(const string& corpus){
+vector<Token> split_corpus(const string& corpus, const vector<VocabEntry>& vocab){
     vector<Token> tokens;
+    tokens.reserve(corpus.size());
 
-    for(char c : corpus) {
-        tokens.push_back(c);
+    const size_t offset = vocab.size() - 256;
+
+    for(unsigned char c : corpus) {
+        uint32_t token_id = vocab[offset + c].token_id;
+        tokens.push_back(token_id);
     }
 
     return tokens;
@@ -96,7 +102,7 @@ vector<uint32_t> tokenize(const string& corpus, const vector<string>& specials, 
         vocab.push_back({next_id++, tok})
     }
 
-    vector<uint32_t> corpus_tokens = split_corpus(corpus);
+    vector<uint32_t> corpus_tokens = split_corpus(corpus, vocab);
 
     /// -------------------------------------
     //           Primary BPE Loop
