@@ -10,3 +10,7 @@ Sources and Helpful Links:
 To Rebuild (from wrapper_config):
     mac: python3 setup.py build_ext --inplace
     wnd: python setup.py build_ext --inplace
+
+# Sources:
+- BPE Help:
+-- https://www.geeksforgeeks.org/nlp/byte-pair-encoding-bpe-in-nlp/#
