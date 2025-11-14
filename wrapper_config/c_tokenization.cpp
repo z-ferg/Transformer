@@ -15,12 +15,10 @@ namespace py = pybind11;
 using namespace std;
 
 using Token = uint32_t;
+using Pair = uint64_t;
 using CountMap = unordered_map<Pair, uint64_t>;
 
-using Pair = uint64_t;
-inline Pair pack_pair(uint32_t a, uint32_t b) {
-    return (static_cast<uint64_t>(a) << 32 | b);
-}
+inline Pair pack_pair(uint32_t a, uint32_t b) { return (static_cast<uint64_t>(a) << 32) | static_cast<uint64_t>(b); }
 inline uint32_t unpack_first(Pair p)  { return p >> 32; }
 inline uint32_t unpack_second(Pair p) { return p & 0xFFFFFFFF;}
 
@@ -50,12 +48,42 @@ vector<Token> split_corpus(const string& corpus, const vector<VocabEntry>& vocab
 
 /*  Find all pairings in the corpus
 */
-CountMap count_pairs_parallel(const vector<Token>& tokens){}
+CountMap count_pairs_parallel(const vector<Token>& tokens){
+    CountMap mapping; // unordered_map<Pair, uint64_t>
+
+    if (tokens.size() < 2) return mapping;
+
+    for (size_t i = 0; i < tokens.size() - 1; i++){
+        Pair p = pack_pair(tokens[i], tokens[i+1]);
+
+        if(mapping.find(p) != mapping.end()){
+            mapping[p]++;
+        }
+        else {
+            mapping[p] = 1;
+        }
+    }
+
+    return mapping;
+}
 
 
 /*  Function for finding the best pair among all counted pairs
 */
-Pair find_best_pair(const CountMap& counts){}
+Pair find_best_pair(const CountMap& counts){
+
+    if (counts.empty()) throw runtime_error("No mergable pairs found");
+
+    uint64_t highest_freq = 0;
+    Pair best_pair = 0;
+    for (auto it = counts.begin(); it != counts.end(); it++){
+        if(it->second > highest_freq){
+            highest_freq = it->second;
+            best_pair = it->first;
+        }
+    }
+    return best_pair;
+}
 
 /*  Function for taking 2 tokens and merging throughout the corpus
         Takes in the current corpus tokens and all IDs required
@@ -63,7 +91,7 @@ Pair find_best_pair(const CountMap& counts){}
 */
 vector<uint32_t> merge_in_corpus(const vector<uint32_t>& tokens, const uint32_t& id_a, const uint32_t& id_b, const uint32_t& new_id){
     vector<uint32_t> new_tokens;
-    new_tokens.reserve(tokens.size())
+    new_tokens.reserve(tokens.size());
 
     for (size_t i = 0; i < tokens.size();) {
         if (i + 1 < tokens.size() && tokens[i] == id_a && tokens[i + 1] == id_b){
@@ -83,13 +111,13 @@ vector<uint32_t> merge_in_corpus(const vector<uint32_t>& tokens, const uint32_t&
         Takes in very large chunk of text from python endpoint
         Returns vector of sequential token IDs (decoding not available?)
 */
-vector<uint32_t> tokenize(const string& corpus, const vector<string>& specials, const uint32_t& vocab_size){
+pair<vector<uint32_t>, vector<VocabEntry>> tokenize(const string& corpus, const vector<string>& specials, const uint32_t& vocab_size){
     /// -------------------------------------
     //        Initialize Vocabulary
     /// -------------------------------------
     vector<VocabEntry> vocab;
     uint32_t next_id = 0;
-    vocab.reserve(256 + specials.size())
+    vocab.reserve(256 + specials.size());
 
     // Add special tokens to the vocabulary
     for(string token : specials){
@@ -99,8 +127,10 @@ vector<uint32_t> tokenize(const string& corpus, const vector<string>& specials, 
     // Add all raw byte values to vocabulary
     for(int byte = 0; byte < 256; ++byte) {
         string tok(1, static_cast<char>(byte));
-        vocab.push_back({next_id++, tok})
+        vocab.push_back({next_id++, tok});
     }
+
+    if (vocab_size <= vocab.size()) throw runtime_error("vocab_size param must exceed initial vocabulary size");
 
     vector<uint32_t> corpus_tokens = split_corpus(corpus, vocab);
 
@@ -121,7 +151,7 @@ vector<uint32_t> tokenize(const string& corpus, const vector<string>& specials, 
         corpus_tokens.swap(merge_in_corpus(corpus_tokens, id_a, id_b, merged_id));
     }
 
-    return corpus_tokens;
+    return { corpus_tokens, vocab };
 }
 
 
